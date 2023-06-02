@@ -1,0 +1,9 @@
+{"db":"Client","operation":"insert","data":{"User_id":"C123456789","UserName":"john_doe","password":"P@$$w0rd123","F_Name":"John","L_Name":"Doe","Phone":"1234567890","Addr_1":"123 Main St","Addr_2":"Apt 4B"}}
+{"db":"Cart","operation":"insert","data":{"Cart_id":1,"User_ID":"C123456789","total_qty":3,"total_cost":99.97,"Created_at":"2023-05-28T10:00:00Z","modified_at":"2023-05-28T12:30:00Z"}}
+{"db":"Order_Details","operation":"insert","data":{"order_id":1,"user_id":"C123456789","total_cost":99.97,"items":{"item1":"Product A","item2":"Product B"},"Payment_id":"PAY123","cart_id":1,"Created_at":"2023-05-28T14:00:00Z","Modified_at":"2023-05-28T16:30:00Z"}}
+{"db":"Payment_Details","operation":"insert","data":{"order_id":1,"transaction_id":12345,"Amount":99.97,"Provider":"Stripe","Status":"Paid","Created_at":"2023-05-28T14:30:00Z","payment_id":"PAY123"}}
+{"db":"User_Payment","operation":"insert","data":{"Payment_id":"PAY123","User_id":"C123456789","payment_type":"Credit Card","provider":"Visa","account_no":"************1234","expiry":"2025-12-31"}}
+{"db":"Product","operation":"insert","data":{"Product_id":"P123","Product_name":"Product A","description":"This is Product A","Category":{"category_id":1,"category_name":"Category 1"},"Price":49.99,"Created_at":"2023-05-28T09:00:00Z","modified_at":"2023-05-28T11:30:00Z"}}
+{"db":"Vendor","operation":"insert","data":{"Vendor_id":"V123","Vendor_name":"Vendor A","password":"P@$$w0rd","Phone":"9876543210","Addr":"456 Vendor Street","Created_at":"2023-05-28T08:00:00Z"}}
+{"db":"Product_Vendor","operation":"insert","data":{"Product_id":"P123","Vendor_id":"V123","Item_id":"I123","Item_Name":"Item A","Quantity":10,"Discount_Price":45.99,"Created_at":"2023-05-28T09:30:00Z","modified_at":"2023-05-28T12:00:00Z"}}
+{"db":"Cart_Items","operation":"insert","data":{"cart_id":1,"Item_id":"I123","Quantity":2}}
