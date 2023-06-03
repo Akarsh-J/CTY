@@ -28,8 +28,8 @@ def process_thread_records(records):
     barrier.wait()
     for record in records:
         try:
-            print(threading.current_thread().name)
-            print(record.offset)
+            print(threading.current_thread().name, record.offset)
+            # print(record.offset)
             offsets[record.offset] = 1
         except Exception as e:
             print("An error occured: ", str(e))
@@ -45,8 +45,11 @@ while True:
 
     # threadpool
     futures = []
+    if len(batch) == 0:
+        continue
+
     for topic_partition, records in batch.items():
-        offsets.clear
+        offsets.clear()
 
         for record in records:
             offsets[record.offset] = 0
@@ -63,10 +66,11 @@ while True:
             for j in range(min_records_per_thread + 1):
                 if index < num_records:
                     thread_records.append(records[index])
-                    index += min_records_per_thread
+                    index += num_threads
 
             # Submit the thread task to the thread pool
             future = pool.submit(process_thread_records, thread_records)
+
             futures.append(future)
 
     print(offsets)
