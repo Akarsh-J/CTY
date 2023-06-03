@@ -2,16 +2,19 @@ from kafka import KafkaConsumer
 import threading
 from time import sleep
 from concurrent.futures import ThreadPoolExecutor
+from kafka.structs import TopicPartition
 
 
 # Create a Kafka consumer instance
 consumer = KafkaConsumer(
-    "insert",
     bootstrap_servers="localhost:9092",
     group_id="group-id",
     enable_auto_commit=False,  # Disable auto commit
-    max_poll_records=18,  # Set the maximum number of records to fetch in each poll
+    max_poll_records=20,  # Set the maximum number of records to fetch in each poll
 )
+
+partition = TopicPartition("insert", 0)
+consumer.assign([partition])
 
 num_threads = 4
 barrier = threading.Barrier(num_threads + 1)  # +1 for main thread
@@ -20,6 +23,9 @@ barrier = threading.Barrier(num_threads + 1)  # +1 for main thread
 pool = ThreadPoolExecutor(max_workers=num_threads)
 
 # Store execution status of each offset
+# 0 - Queued for execution
+# 1 - Succesful
+# -1 - Exception
 offsets = {}
 
 
@@ -34,6 +40,22 @@ def process_thread_records(records):
         except Exception as e:
             print("An error occured: ", str(e))
             offsets[record.offset] = -1
+
+
+def commit_offsets():
+    sorted_keys = sorted(offsets.keys())
+    offset_to_commit = -1
+
+    for key in sorted_keys:
+        value = offsets[key]
+        if value == 1:
+            offset_to_commit = key
+        elif value == -1:
+            break
+
+    consumer.seek(partition, offset_to_commit)
+    print("commiting offset: ", offset_to_commit)
+    consumer.commit()
 
 
 # Continuously poll for thread_records in batches
@@ -82,6 +104,7 @@ while True:
     print("\n after join")
     print(offsets)
 
+    commit_offsets()
     a = input()
     # print(batch)
 
