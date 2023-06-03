@@ -33,7 +33,7 @@ def process_thread_records(records):
             offsets[record.offset] = 1
         except Exception as e:
             print("An error occured: ", str(e))
-            offset[record.offset] = -1
+            offsets[record.offset] = -1
 
 
 # Continuously poll for thread_records in batches
