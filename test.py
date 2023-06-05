@@ -11,6 +11,7 @@ consumer = KafkaConsumer(
     group_id="group-id",
     enable_auto_commit=False,  # Disable auto commit
     max_poll_records=20,  # Set the maximum number of records to fetch in each poll
+    auto_offset_reset="latest",
 )
 
 partition = TopicPartition("insert", 0)
@@ -27,40 +28,61 @@ pool = ThreadPoolExecutor(max_workers=num_threads)
 # 1 - Succesful
 # -1 - Exception
 offsets = {}
+executed_records_post_error = []
 
 
 def process_thread_records(records):
     # wait for all threads to reach the barrier
     barrier.wait()
     for record in records:
-        try:
-            print(threading.current_thread().name, record.offset)
-            # print(record.offset)
-            offsets[record.offset] = 1
-        except Exception as e:
-            print("An error occured: ", str(e))
-            offsets[record.offset] = -1
+        #Check if the record was executed by the prvious batch
+        if record.offset not in executed_records_post_error:
+            try:
+                
+                print(threading.current_thread().name, record.offset)
+                # print(record.offset)
+                offsets[record.offset] = 1
+            except Exception as e:
+                print("An error occured: ", str(e))
+                offsets[record.offset] = -1
+        
+        else:
+            print(f"{record.offset} already executed in the previous batch")
+    
 
 
 def commit_offsets():
     sorted_keys = sorted(offsets.keys())
     offset_to_commit = -1
+    error_occurred = False
 
     for key in sorted_keys:
         value = offsets[key]
-        if value == 1:
+        if value == 1 and error_occurred == False:
             offset_to_commit = key
+        #After an exception has occured if any record has been executed, Then keep track of those records in the list
+        elif value == 1 and error_occured == True:
+            executed_records_post_error.append(key)
         elif value == -1:
-            break
+            error_occured = True
 
-    consumer.seek(partition, offset_to_commit)
-    print("commiting offset: ", offset_to_commit)
-    consumer.commit()
+    if offset_to_commit != -1:
+        # move the consumer pointer to the offset that is to be committed
+        consumer.seek(partition, offset_to_commit)
+        print("commiting offset: ", offset_to_commit)
+        consumer.commit()
+        # After commiting, seek to make consumer to read from the next
+        consumer.seek(partition, offset_to_commit + 1)
+    
+    else:
+        print("Re-executing the same batch since the first record failed")
+        consumer.seek(partition,sorted_keys[0])
 
 
 # Continuously poll for thread_records in batches
 while True:
     # Poll for new thread_records
+    print("Last offset: ", consumer.position(partition))
     batch = consumer.poll(timeout_ms=500)  # Adjust the timeout as needed
     print("New Batch is here\n")
     print("\n\n")
@@ -101,6 +123,7 @@ while True:
     # wait for all threads to complete its execution
     for future in futures:
         future.result()
+    
     print("\n after join")
     print(offsets)
 
