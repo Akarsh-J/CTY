@@ -19,8 +19,8 @@ consumer = KafkaConsumer(
 partition = TopicPartition("insert", 0)
 consumer.assign([partition])
 
+
 NUM_THREADS = 4
-barrier = threading.Barrier(NUM_THREADS + 1)  # +1 for main thread
 
 # thread pool to limit the number of threads being sprout
 pool = ThreadPoolExecutor(max_workers=NUM_THREADS)
@@ -49,7 +49,7 @@ def process_thread_records(records):
     cursor = connection.cursor()
     
     # wait for all threads to reach the barrier
-    barrier.wait()
+
     for record in records:
         #Check if the record was executed by the prvious batch
         if record.offset not in executed_records_post_error["success"]:
@@ -125,7 +125,7 @@ def process_thread_records(records):
 
                     print(f"Message '{query}' inserted into the database")
 
-                if msg["db"] == "user_payment":
+                if msg["db"] == "User_Payment":
                     payment_id, user_id, payment_type, provider, account_no, expiry = msg[
                         "data"
                     ].values()
@@ -162,7 +162,7 @@ def process_thread_records(records):
 
                     print(f"Message '{query}' inserted into the database")
 
-                if msg["db"] == "product_Vendor":
+                if msg["db"] == "Product_Vendor":
                     (
                         product_id,
                         vendor_id,
@@ -180,11 +180,11 @@ def process_thread_records(records):
 
                     print(f"Message '{query}' inserted into the database")
 
-                if msg["db"] == "Cart_items":
+                if msg["db"] == "Cart_Items":
                     cart_id, item_id, quantity = msg["data"].values()
 
                     query = (
-                        f"INSERT INTO Cart_items VALUES ({cart_id}, '{item_id}', {quantity})"
+                        f"INSERT INTO Cart_Items VALUES ({cart_id}, '{item_id}', {quantity})"
                     )
                     cursor.execute(query)
                     connection.commit()
@@ -194,7 +194,9 @@ def process_thread_records(records):
                 print(threading.current_thread().name, record.offset)
                 # print(record.offset)
                 OFFSETS[record.offset] = 1
-                executed_records_post_error["error"].pop(record.offset)
+                print(OFFSETS)
+                if record.offset in executed_records_post_error["error"].keys():
+                    executed_records_post_error["error"].pop(record.offset)
                 
             except Exception as e:
                 #print("An error occured: ", str(e))
@@ -206,7 +208,8 @@ def process_thread_records(records):
                             DLQ.write(str({record.offset: str(e)})+"\n")
                         print(f"ENTERING THE RECORD {record.offset} TO DLQ as it exceeds threshold")
                         OFFSETS[record.offset] = 1  #Assume the record has succesfully executed
-                        executed_records_post_error["error"].pop(record.offset)
+                        if record.offset in executed_records_post_error["error"].keys():
+                            executed_records_post_error["error"].pop(record.offset)
                         
                         DLQ.close()
                     else:
@@ -293,7 +296,6 @@ while True:
             futures.append(future)
 
     print(OFFSETS)
-    barrier.wait()
 
     # wait for all threads to complete its execution
     for future in futures:

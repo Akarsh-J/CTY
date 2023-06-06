@@ -1,0 +1,1 @@
+{2455: 'insert or update on table "cart_items" violates foreign key constraint "cart_items_cart_id_fkey"\nDETAIL:  Key (cart_id)=(1) is not present in table "cart".\n'}

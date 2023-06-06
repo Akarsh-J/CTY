@@ -16,7 +16,7 @@ def send_message(message):
 
 
 # Read messages from the file
-with open("queries.txt", "r") as file:
+with open("queries2.txt", "r") as file:
     messages = file.readlines()
 
 # Send each message to Kafka

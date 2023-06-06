@@ -28,5 +28,6 @@ for message in messages:
         print("Invalid JSON format. Please enter a valid JSON message.")
         continue
 
+
 # Close the Kafka producer
 producer.close()

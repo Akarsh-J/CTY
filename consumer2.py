@@ -161,16 +161,6 @@ def process_message(message):
 
             print(f"Message '{query}' inserted into the database")
 
-        # print(db, operation)
-
-        # query = (f"INSERT INTO sample VALUES ('{msg[0]}', '{msg[1]}', {msg[2]}, {msg[2]})")
-
-        # Execute the query
-        # cursor.execute(query)
-        # connection.commit()
-
-        # Print confirmation
-        # print(f"Message '{message.value.decode('utf-8')}' inserted into the database")
     except Exception as e:
         print(f"Error processing message '{message.value.decode('utf-8')}': {str(e)}")
     finally:
