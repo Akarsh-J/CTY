@@ -19,18 +19,21 @@ consumer = KafkaConsumer(
 partition = TopicPartition("insert", 0)
 consumer.assign([partition])
 
-num_threads = 4
-barrier = threading.Barrier(num_threads + 1)  # +1 for main thread
+NUM_THREADS = 4
+barrier = threading.Barrier(NUM_THREADS + 1)  # +1 for main thread
 
 # thread pool to limit the number of threads being sprout
-pool = ThreadPoolExecutor(max_workers=num_threads)
+pool = ThreadPoolExecutor(max_workers=NUM_THREADS)
 
 # Store execution status of each offset
 # 0 - Queued for execution
 # 1 - Succesful
 # -1 - Exception
-offsets = {}
-executed_records_post_error = []
+OFFSETS = {}
+
+#format: {"error":{"offset":{"count":0,"err":str(e)}}, "success":[offset_number]}
+executed_records_post_error = {"error":{},"success":[]}
+THRESHOLD_FOR_DLQ = 2   #Threshold to enter a record into Dead letter queue
 
 
 def process_thread_records(records):
@@ -49,7 +52,7 @@ def process_thread_records(records):
     barrier.wait()
     for record in records:
         #Check if the record was executed by the prvious batch
-        if record.offset not in executed_records_post_error:
+        if record.offset not in executed_records_post_error["success"]:
             try:
                 msg = record.value.decode("utf-8")
                 # msg = msg.strip().split(",")
@@ -190,34 +193,48 @@ def process_thread_records(records):
                 
                 print(threading.current_thread().name, record.offset)
                 # print(record.offset)
-                offsets[record.offset] = 1
+                OFFSETS[record.offset] = 1
+                executed_records_post_error["error"].pop(record.offset)
                 
             except Exception as e:
                 #print("An error occured: ", str(e))
                 print(f"Error processing message '{record.value.decode('utf-8')}': {str(e)}")
-                offsets[record.offset] = -1
+                connection.rollback()   #to avoid the error:  current transaction is aborted, commands ignored until end of transaction block
+                if record.offset in executed_records_post_error["error"].keys():
+                    if executed_records_post_error["error"][record.offset]["count"] > THRESHOLD_FOR_DLQ:
+                        with open("DLQ.txt", "a") as DLQ:
+                            DLQ.write(str({record.offset: str(e)})+"\n")
+                        print(f"ENTERING THE RECORD {record.offset} TO DLQ as it exceeds threshold")
+                        OFFSETS[record.offset] = 1  #Assume the record has succesfully executed
+                        executed_records_post_error["error"].pop(record.offset)
+                        
+                        DLQ.close()
+                    else:
+                        executed_records_post_error["error"][record.offset]["count"] += 1
+                        OFFSETS[record.offset] = -1
+                        
+                else:
+                    executed_records_post_error["error"][record.offset] = {"count":1,"err":str(e)}
+                    OFFSETS[record.offset] = -1
         
         else:
             print(f"{record.offset} already executed in the previous batch")
-    
+            OFFSETS[record.offset] = 1
 
 
 def commit_offsets():
-    sorted_keys = sorted(offsets.keys())
+    sorted_keys = sorted(OFFSETS.keys())
     offset_to_commit = -1
     error_occurred = False
 
     for key in sorted_keys:
-        value = offsets[key]
+        value = OFFSETS[key]
         if value == 1 and error_occurred == False:
-            print(1)
             offset_to_commit = key
         #After an exception has occured if any record has been executed, Then keep track of those records in the list
         elif value == 1 and error_occurred == True:
-            print(2)
-            executed_records_post_error.append(key)
+            executed_records_post_error["success"].append(key)
         elif value == -1:
-            print(3)
             error_occurred = True
 
     if offset_to_commit != -1:
@@ -236,7 +253,11 @@ def commit_offsets():
 # Continuously poll for thread_records in batches
 while True:
     # Poll for new thread_records
-    print("Last offset: ", consumer.position(partition))
+    #print("Last offset: ", consumer.position(partition))
+    #with open("history.txt","r") as file:
+    #    json_string = file.read()
+    
+    #executed_records_post_error = json.loads(json_string)
     batch = consumer.poll(timeout_ms=500)  # Adjust the timeout as needed
     print("New Batch is here\n")
     print("\n\n")
@@ -247,15 +268,15 @@ while True:
         continue
 
     for topic_partition, records in batch.items():
-        offsets.clear()
+        OFFSETS.clear()
 
         for record in records:
-            offsets[record.offset] = 0
+            OFFSETS[record.offset] = 0
 
         num_records = len(records)
-        min_records_per_thread = num_records // num_threads
+        min_records_per_thread = num_records // NUM_THREADS
 
-        for i in range(num_threads):
+        for i in range(NUM_THREADS):
             thread_records = []
             index = i
 
@@ -264,14 +285,14 @@ while True:
             for j in range(min_records_per_thread + 1):
                 if index < num_records:
                     thread_records.append(records[index])
-                    index += num_threads
+                    index += NUM_THREADS
 
             # Submit the thread task to the thread pool
             future = pool.submit(process_thread_records, thread_records)
 
             futures.append(future)
 
-    print(offsets)
+    print(OFFSETS)
     barrier.wait()
 
     # wait for all threads to complete its execution
@@ -279,13 +300,18 @@ while True:
         future.result()
     
     print("\n after join")
-    print(offsets)
-
+    print(OFFSETS)
     commit_offsets()
+    
+    with open("history.txt","w") as file:
+        file.write(str(executed_records_post_error))
+    
+    file.close()
+
     a = input()
     # print(batch)
 
-    # Manually commit the offsets once the batch is processed
+    # Manually commit the OFFSETS once the batch is processed
     # consumer.commit()
 
 # Close the consumer connection
