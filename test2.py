@@ -270,17 +270,15 @@ def commit_offsets():
         print("Re-executing the same batch since the first record failed")
         consumer.seek(partition,sorted_keys[0])
 
-#start_time = time()
+start_time = time()
 # Continuously poll for thread_records in batches
 while True:
     # Poll for new thread_records
     #print("Last offset: ", consumer.position(partition))
-    with open("history.txt","r") as file:
-        json_string = file.read()
+    #with open("history.txt","r") as file:
+    #    json_string = file.read()
     
-    executed_records_post_error = json.loads(json_string)
-    
-    file.close()
+    #executed_records_post_error = json.loads(json_string)
     batch = consumer.poll(timeout_ms=2000)  # Adjust the timeout as needed
     print("New Batch is here\n\n")
 
