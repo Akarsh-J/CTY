@@ -11,12 +11,12 @@ producer = KafkaProducer(
 
 # Send messages to the Kafka topic
 def send_message(message):
-    producer.send("insert", value=message)
+    producer.send("ecom", value=message)
     producer.flush()
 
 
 # Read messages from the file
-with open("queries2.txt", "r") as file:
+with open("queries4.txt", "r") as file:
     messages = file.readlines()
 
 # Send each message to Kafka
