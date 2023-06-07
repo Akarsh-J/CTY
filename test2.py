@@ -1,6 +1,6 @@
 from kafka import KafkaConsumer
 import threading
-from time import sleep
+from time import sleep,time
 from concurrent.futures import ThreadPoolExecutor
 from kafka.structs import TopicPartition
 import psycopg2
@@ -51,6 +51,7 @@ def process_thread_records(records):
     # wait for all threads to reach the barrier
 
     for record in records:
+        print(f"\n{threading.current_thread().name} : {record.offset}")
         #Check if the record was executed by the prvious batch
         if record.offset not in executed_records_post_error["success"]:
             try:
@@ -205,8 +206,8 @@ def process_thread_records(records):
                 
                 cursor.execute(query)
                 connection.commit()
-                print(f"Message '{query}' inserted into the database")
-                print(threading.current_thread().name, record.offset)
+                
+                print(f"{record.offset} : Query - '{query}' executed")
                 # print(record.offset)
                 OFFSETS[record.offset] = 1
                 #print(OFFSETS)
@@ -215,7 +216,7 @@ def process_thread_records(records):
                 
             except Exception as e:
                 #print("An error occured: ", str(e))
-                print(f"Error processing message '{record.value.decode('utf-8')}': {str(e)}")
+                print(f"{record.offset} : Error processing record - '{record.value.decode('utf-8')}': {str(e)}")
                 connection.rollback()   #to avoid the error:  current transaction is aborted, commands ignored until end of transaction block
                 if record.offset in executed_records_post_error["error"].keys():
                     if executed_records_post_error["error"][record.offset]["count"] > THRESHOLD_FOR_DLQ:
@@ -249,8 +250,10 @@ def commit_offsets():
         value = OFFSETS[key]
         if value == 1 and error_occurred == False:
             offset_to_commit = key
+            if key in executed_records_post_error["success"]:
+                executed_records_post_error["success"].remove(key)
         #After an exception has occured if any record has been executed, Then keep track of those records in the list
-        elif value == 1 and error_occurred == True:
+        elif value == 1 and error_occurred == True and key not in executed_records_post_error["success"]:
             executed_records_post_error["success"].append(key)
         elif value == -1:
             error_occurred = True
@@ -267,19 +270,24 @@ def commit_offsets():
         print("Re-executing the same batch since the first record failed")
         consumer.seek(partition,sorted_keys[0])
 
-
+#start_time = time()
 # Continuously poll for thread_records in batches
 while True:
     # Poll for new thread_records
     #print("Last offset: ", consumer.position(partition))
-    #with open("history.txt","r") as file:
-    #    json_string = file.read()
+    with open("history.txt","r") as file:
+        json_string = file.read()
     
-    #executed_records_post_error = json.loads(json_string)
-    batch = consumer.poll(timeout_ms=500)  # Adjust the timeout as needed
-    print("New Batch is here\n")
-    print("\n\n")
+    executed_records_post_error = json.loads(json_string)
+    
+    file.close()
+    batch = consumer.poll(timeout_ms=2000)  # Adjust the timeout as needed
+    print("New Batch is here\n\n")
 
+    #if not batch:
+    #    print("No message in batch")
+    #    break
+    
     # threadpool
     futures = []
     if len(batch) == 0:
@@ -325,11 +333,15 @@ while True:
     
     file.close()
 
-    a = input()
+    #a = input()
     # print(batch)
 
     # Manually commit the OFFSETS once the batch is processed
     # consumer.commit()
 
+
+end_time = time()
+exec_time = end_time - start_time
+print("Total time for execution of multithreaded consumer: ", exec_time)
 # Close the consumer connection
 consumer.close()
