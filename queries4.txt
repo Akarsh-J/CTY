@@ -1,0 +1,49 @@
+{ "db": "Client", "operation": "insert", "data": { "User_id": "U1", "UserName": "alice_smith", "password": "Password123", "F_Name": "Alice", "L_Name": "Smith", "Phone": "1111111111", "Addr_1": "123 Oak St", "Addr_2": "Apt 1A" } }
+{ "db": "Client", "operation": "update", "data": { "User_id": "U1", "UserName": "AliceSmith", "password": "Password1@3"}}
+{ "db": "Cart", "operation": "insert", "data": { "Cart_id": 3, "User_ID": "U1", "total_qty": 5, "total_cost": 50.99, "Created_at": "2023-05-30T12:00:00Z", "modified_at": "2023-05-30T14:00:00Z" } }
+{ "db": "Cart", "operation": "update", "data": { "Cart_id": 3, "total_qty": 8, "total_cost": 80.99} }
+{ "db": "Client", "operation": "insert", "data": { "User_id": "U2", "UserName": "bob_johnson", "password": "Password456", "F_Name": "Bob", "L_Name": "Johnson", "Phone": "2222222222", "Addr_1": "456 Pine St", "Addr_2": "Apt 2B" } }
+{ "db": "Order_Details", "operation": "insert", "data": { "order_id": 5, "user_id": "U1", "total_cost": 20.50, "items": {"item1": "Product I", "item2": "Product J"}, "Payment_id": "P55", "cart_id": 3, "Created_at": "2023-05-30T18:00:00Z", "Modified_at": "2023-05-30T20:00:00Z" } }
+{ "db": "Cart", "operation": "insert", "data": { "Cart_id": 4, "User_ID": "U2", "total_qty": 2, "total_cost": 20.99, "Created_at": "2023-05-30T13:00:00Z", "modified_at": "2023-05-30T15:00:00Z" } } 
+{ "db": "Order_Details", "operation": "update", "data": { "order_id": 5, "total_cost":620.50, "items": {"item1": "Product I", "item2": "Product J", "item3": "Product A"}} }
+{ "db": "Order_Details", "operation": "insert", "data": { "order_id": 6, "user_id": "U2", "total_cost": 64.00, "items": {"item1": "Product A", "item2": "Product C"}, "Payment_id": "P66", "cart_id": 4, "Created_at": "2023-05-30T19:00:00Z", "Modified_at": "2023-05-30T21:00:00Z" } }
+{ "db": "Payment_Details", "operation": "insert", "data": { "order_id": 5, "transaction_id": 111111, "Amount": 50.99, "Provider": "Payment Provider", "Status": "Completed", "Created_at": "2023-05-30T18:00:00Z", "payment_id": "P55" } }
+{ "db": "Payment_Details", "operation": "insert", "data": { "order_id": 6, "transaction_id": 222222, "Amount": 75.50, "Provider": "Payment Provider", "Status": "Completed", "Created_at": "2023-05-30T19:00:00Z", "payment_id": "P66" } }
+{ "db": "Product", "operation": "insert", "data": { "Product_id": "P111", "Product_name": "Product A", "description": "Description of Product A", "Category": { "category1": "Category A", "category2": "Category B" }, "Price": 19.99, "Created_at": "2023-05-30T08:00:00Z", "modified_at": "2023-05-30T10:00:00Z" } }
+{ "db": "Product", "operation": "insert", "data": { "Product_id": "P222", "Product_name": "Product B", "description": "Description of Product B", "Category": { "category1": "Category C", "category2": "Category A" }, "Price": 12.50, "Created_at": "2023-05-30T08:00:00Z", "modified_at": "2023-05-30T10:00:00Z" } }
+{ "db": "Product", "operation": "update", "data": { "Product_id": "P111", "description": "Updated Description of Product A" } }
+{ "db": "Product", "operation": "insert", "data": { "Product_id": "P333", "Product_name": "Product C", "description": "Description of Product C", "Category": { "category1": "Category C", "category2": "Category D" }, "Price": 10.25, "Created_at": "2023-05-30T08:00:00Z", "modified_at": "2023-05-30T10:00:00Z" } }
+{ "db": "Product", "operation": "insert", "data": { "Product_id": "P444", "Product_name": "Product D", "description": "Description of Product D", "Category": { "category1": "Category F", "category2": "Category G" }, "Price": 13.50, "Created_at": "2023-05-30T08:00:00Z", "modified_at": "2023-05-30T10:00:00Z" } }
+{ "db": "Vendor", "operation": "insert", "data": { "Vendor_id": "V123456789", "Vendor_name": "Vendor A", "password": "vendorpass123", "Phone": "1234567890", "Addr": "Vendor Address", "Created_at": "2023-05-30T14:00:00Z" } }
+{ "db": "Vendor", "operation": "insert", "data": { "Vendor_id": "V234567890", "Vendor_name": "Vendor B", "password": "vendorpass456", "Phone": "2345678901", "Addr": "Vendor Address", "Created_at": "2023-06-01T10:00:00Z" } }
+{ "db": "Vendor", "operation": "insert", "data": { "Vendor_id": "V345678901", "Vendor_name": "Vendor C", "password": "vendorpass789", "Phone": "3456789012", "Addr": "Vendor Address", "Created_at": "2023-06-03T16:00:00Z" } }
+{ "db": "Product", "operation": "delete", "data": { "Product_id": "P333"} }
+{ "db": "Product", "operation": "delete", "data": { "Product_id": "P444"} }
+{ "db": "Vendor", "operation": "update", "data": { "Vendor_id": "V234567890", "Vendor_name": "Vendor B new" } }
+{ "db": "Vendor", "operation": "update", "data": { "Vendor_id": "V345678901", "Vendor_name": "Vendor C new" } }
+{ "db": "Product_Vendor", "operation": "insert", "data": { "Product_id": "P111", "Vendor_id": "V123456789", "Item_id": "I123456789", "Item_Name": "Item A", "Quantity": 10, "Discount_Price": 15.99, "Created_at": "2023-05-30T16:00:00Z", "modified_at": "2023-05-30T18:00:00Z" } } 
+{ "db": "Product_Vendor", "operation": "insert", "data": { "Product_id": "P111", "Vendor_id": "V234567890", "Item_id": "I234567890", "Item_Name": "Item B", "Quantity": 8, "Discount_Price": 12.99, "Created_at": "2023-06-01T12:00:00Z", "modified_at": "2023-06-01T14:00:00Z" } }
+{ "db": "Product_Vendor", "operation": "update", "data": { "Product_id": "P111", "Vendor_id": "V123456789", "Item_id": "I123456789", "Discount_Price": 25.99} } 
+{ "db": "Product_Vendor", "operation": "insert", "data": { "Product_id": "P111", "Vendor_id": "V345678901", "Item_id": "I345678901", "Item_Name": "Item C", "Quantity": 15, "Discount_Price": 18.99, "Created_at": "2023-06-03T14:00:00Z", "modified_at": "2023-06-03T16:00:00Z" } }
+{ "db": "Product_Vendor", "operation": "update", "data": { "Product_id": "P111", "Vendor_id": "V234567890", "Item_id": "I234567890","Discount_Price": 30.99}}
+{ "db": "Product_Vendor", "operation": "delete", "data": { "Product_id": "P111", "Vendor_id": "V123456789", "Item_id": "I123456789"} } 
+{ "db": "Product_Vendor", "operation": "insert", "data": { "Product_id": "P111", "Vendor_id": "V345678901", "Item_id": "I345678901", "Item_Name": "Item C", "Quantity": 15, "Discount_Price": 18.99, "Created_at": "2023-06-03T14:00:00Z", "modified_at": "2023-06-03T16:00:00Z" } }
+{ "db": "Product_Vendor", "operation": "update", "data": { "Product_id": "P111", "Vendor_id": "V345678901", "Item_id": "I345678901", "Discount_Price": 48.99} }
+{ "db": "Product_Vendor", "operation": "delete", "data": { "Product_id": "P111", "Vendor_id": "V345678901", "Item_id": "I345678901"} }
+{ "db": "User_Payment", "operation": "insert", "data": { "Payment_id": "P55", "User_id": "U1", "payment_type": "Credit Card", "provider": "Payment Provider", "account_no": "************2345", "expiry": "2025-12-31" } }
+{ "db": "User_Payment", "operation": "delete", "data": { "Payment_id": "P55"} }
+{ "db": "User_Payment", "operation": "insert", "data": { "Payment_id": "P55", "User_id": "U1", "payment_type": "Debit Card", "provider": "Payment Provider", "account_no": "************2345", "expiry": "2025-12-31" } }
+{ "db": "Client", "operation": "delete", "data": { "User_id": "U1" } }
+{ "db": "User_Payment", "operation": "insert", "data": { "Payment_id": "P66", "User_id": "U2", "payment_type": "Credit Card", "provider": "Payment Provider", "account_no": "************3456", "expiry": "2024-10-31" } }
+{ "db": "User_Payment", "operation": "update", "data": { "Payment_id": "P66", "account_no": "************3556"} }
+{ "db": "Cart_Items", "operation": "insert", "data": { "cart_id": 3, "Item_id": "I123456789", "Quantity": 2 } }
+{ "db": "Cart_Items", "operation": "insert", "data": { "cart_id": 4, "Item_id": "I234567892", "Quantity": 3 } }
+{ "db": "Cart_Items", "operation": "update", "data": { "cart_id": 3, "Item_id": "I123456789", "Quantity": 10 } }
+{ "db": "Cart_Items", "operation": "delete", "data": { "cart_id": 3, "Item_id": "I123456789" } }
+{ "db": "Cart_Items", "operation": "update", "data": { "cart_id": 4, "Item_id": "I234567892", "Quantity": 14} }
+{ "db": "Cart_Items", "operation": "delete", "data": { "cart_id": 4, "Item_id": "I234567892"} }
+{ "db": "Vendor", "operation": "delete", "data": { "Vendor_id": "V345678901"} }
+{ "db": "User_Payment", "operation": "delete", "data": { "Payment_id": "P66"} }
+{ "db": "Cart", "operation": "delete", "data": { "Cart_id": 3} }
+{ "db": "Payment_Details", "operation": "update", "data": {"transaction_id": 222222, "Amount": 75.50 }}
+{ "db": "Payment_Details", "operation": "delete", "data": {"transaction_id": 222222}}
