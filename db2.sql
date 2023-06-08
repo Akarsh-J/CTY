@@ -49,7 +49,7 @@ CREATE TABLE IF NOT EXISTS user_payment(
     User_id char(10) NOT NULL,
     payment_type char(20),
     provider char(30),
-    account_no char(15),
+    account_no char(18),
     expiry date,
     FOREIGN KEY(Payment_id) REFERENCES Order_Details(payment_id),
     FOREIGN KEY(user_id) REFERENCES client(User_id)
